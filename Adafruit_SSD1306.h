@@ -75,6 +75,10 @@ All text above, and the splash screen must be included in any redistribution
 //   #define SSD1306_96_16
 /*=========================================================================*/
 
+// ID115 fitness bracelet. It has a weird rendering dynamic.
+// Comment if you're not using this board.
+#define ID115
+
 #if defined SSD1306_128_64 && defined SSD1306_128_32
   #error "Only one SSD1306 display can be specified at once in SSD1306.h"
 #endif
@@ -125,7 +129,11 @@ All text above, and the splash screen must be included in any redistribution
 #define SSD1306_COMSCANINC 0xC0
 #define SSD1306_COMSCANDEC 0xC8
 
-#define SSD1306_SEGREMAP 0xA0
+#ifdef ID115
+  #define SSD1306_SEGREMAP 0x01
+#else
+  #define SSD1306_SEGREMAP 0xA0
+#endif
 
 #define SSD1306_CHARGEPUMP 0x8D
 

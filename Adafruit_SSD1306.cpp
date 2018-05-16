@@ -37,6 +37,10 @@ All text above, and the splash screen below must be included in any redistributi
 
 // the memory buffer for the LCD
 
+#ifdef ID115
+static uint8_t tmp_buffer[1 + SSD1306_LCDWIDTH];
+#endif
+
 static uint8_t buffer[SSD1306_LCDHEIGHT * SSD1306_LCDWIDTH / 8] = {
 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -466,6 +470,29 @@ void Adafruit_SSD1306::display(void) {
     //Serial.println(TWBR, DEC);
     //Serial.println(TWSR & 0x3, DEC);
 
+#ifdef ID115
+    memset(tmp_buffer, 0x00, SSD1306_LCDWIDTH + 1);
+    tmp_buffer[0] = 0x40;
+
+    for (uint8_t page=0; page<4; page++) {
+      int init = page*SSD1306_LCDWIDTH;
+
+      for (int i=0; i<SSD1306_LCDWIDTH; i++) {
+        if (i%2 == 0) {
+          tmp_buffer[1 + 1*16 + i/2] = buffer[init + i];
+        } else {
+          tmp_buffer[1 + 5*16 + i/2] = buffer[init + i];
+        }
+      }
+
+      for (uint8_t x=1; x<SSD1306_LCDWIDTH+1; x++) {
+        Wire.beginTransmission(_i2caddr);
+        WIRE_WRITE(0x40);
+        WIRE_WRITE(tmp_buffer[x]);
+        Wire.endTransmission();
+      }
+    }
+#else
     // I2C
     for (uint16_t i=0; i<(SSD1306_LCDWIDTH*SSD1306_LCDHEIGHT/8); i++) {
       // send a bunch of data in one xmission
@@ -478,6 +505,8 @@ void Adafruit_SSD1306::display(void) {
       i--;
       Wire.endTransmission();
     }
+#endif
+
 #ifdef TWBR
     TWBR = twbrbackup;
 #endif
